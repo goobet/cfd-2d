@@ -4,3 +4,10 @@ Test/*
 ipch/*
 Release/*
 Test*/*
+/*.log
+/*.vtk
+/*.unv
+task.xml
+*.sdf
+*.suo
+*.opensdf

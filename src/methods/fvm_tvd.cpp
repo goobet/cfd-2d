@@ -211,7 +211,6 @@ void FVM_TVD::init(char * xmlFileName)
 	save(0);
 }
 
-
 void FVM_TVD::calcTimeStep()
 {
 	if (STEADY) {
@@ -646,6 +645,122 @@ void FVM_TVD::calcFlux(double& fr, double& fu, double& fv, double& fe, Param pL,
 	//}
 }
 
+double psi1(double x) {
+	return x < 1 ? x : 1;
+}
+
+double psi2(double x) {
+	double eps = 0;
+	return (x*x + 2 * x + eps) / (x*x + x + 2 + eps);
+}
+
+double extrapolate(Point ec, double * u, double um, Point uc, Point* nodes, Point grad, int n)
+{
+	double umax = um;
+	double umin = um;
+
+	for (int i = 0; i < n; i++) {
+		if (u[i] > umax) {
+			umax = u[i];
+		}
+
+		if (u[i] < umin) {
+			umin = u[i];
+		}
+	}
+
+	double ui[3];
+
+	for (int i = 0; i < n; i++) {
+		ui[i] = um + grad.x*(nodes[i].x - uc.x) + grad.y*(nodes[i].y - uc.y);
+	}
+
+	double limiter = 1;
+
+	for (int i = 0; i < n; i++) {
+		double r = 1;
+
+		if (ui[i] - um > 0) {
+			r = (umax - um) / (ui[i] - um);
+		}
+
+		if (ui[i] - um < 0) {
+			r = (umin - um) / (ui[i] - um);
+		}
+
+		double psi = psi2(r);
+
+		if (psi < limiter) {
+			limiter = psi;
+		}
+	}
+
+	return um + limiter*grad.x*(ec.x - uc.x) + limiter*grad.y*(ec.y - uc.y);
+}
+
+Param FVM_TVD::reconstructParam(Point p, int cell) {
+	Cell *c = &(grid.cells[cell]);
+	Param cp = Param();
+	convertConsToPar(cell, cp);
+
+	Param nc[3];
+	for (int i = 0; i < 3; i++) {
+		int ei = (*c).edgesInd[i];
+		int ac;
+		if (ei < 0) {
+			ac = cell;
+		}
+		else {
+			ac = grid.edges[ei].c1 == cell ? grid.edges[ei].c2 : grid.edges[ei].c1;
+			ac = ac < 0 ? cell : ac;
+		}
+
+		convertConsToPar(ac, nc[i]);
+	}
+
+	Point nodesc[3];
+
+	for (int i = 0; i < 3; i++) {
+		nodesc[i] = grid.nodes[(*c).nodesInd[i]];
+	}
+
+
+	double u[3];
+
+	// r, p, u, v
+
+	// r
+	for (int i = 0; i < 3; i++) {
+		u[i] = nc[i].r;
+	}
+
+	cp.r = extrapolate(p, u, cp.r, (*c).c, nodesc, gradR[cell], 3);
+
+	// p
+	for (int i = 0; i < 3; i++) {
+		u[i] = nc[i].p;
+	}
+
+	cp.p = extrapolate(p, u, cp.p, (*c).c, nodesc, gradP[cell], 3);
+
+	// v
+
+	for (int i = 0; i < 3; i++) {
+		u[i] = nc[i].v;
+	}
+
+	cp.v = extrapolate(p, u, cp.v, (*c).c, nodesc, gradV[cell], 3);
+
+	// u
+	for (int i = 0; i < 3; i++) {
+		u[i] = nc[i].u;
+	}
+
+	cp.u = extrapolate(p, u, cp.u, (*c).c, nodesc, gradU[cell], 3);
+
+	return cp;
+}
+
 
 void FVM_TVD::reconstruct(int iEdge, Param& pL, Param& pR, Point p)
 {
@@ -653,29 +768,8 @@ void FVM_TVD::reconstruct(int iEdge, Param& pL, Param& pR, Point p)
 	{
 		int c1	= grid.edges[iEdge].c1;
 		int c2	= grid.edges[iEdge].c2;
-		convertConsToPar(c1, pL);
-		convertConsToPar(c2, pR);
-		return;
-		//Point PE = grid.edges[iEdge].c[0];
-		Point &PE = p;
-		Point P1 = grid.cells[c1].c;
-		Point P2 = grid.cells[c2].c;
-		Vector DL1;
-		Vector DL2;
-		DL1.x=PE.x-P1.x;
-		DL1.y=PE.y-P1.y;
-		DL2.x=PE.x-P2.x;
-		DL2.y=PE.y-P2.y;
-		pL.r+=gradR[c1].x*DL1.x+gradR[c1].y*DL1.y;
-		pL.p+=gradP[c1].x*DL1.x+gradP[c1].y*DL1.y;
-		pL.u+=gradU[c1].x*DL1.x+gradU[c1].y*DL1.y;
-		pL.v+=gradV[c1].x*DL1.x+gradV[c1].y*DL1.y;
-		pR.r+=gradR[c2].x*DL2.x+gradR[c2].y*DL2.y;
-		pR.p+=gradP[c2].x*DL2.x+gradP[c2].y*DL2.y;
-		pR.u+=gradU[c2].x*DL2.x+gradU[c2].y*DL2.y;
-		pR.v+=gradV[c2].x*DL2.x+gradV[c2].y*DL2.y;
-
-
+		pL = reconstructParam(p, c1);
+		pR = reconstructParam(p, c2);
 	} else {
 		int c1	= grid.edges[iEdge].c1;
 		convertConsToPar(c1, pL);

@@ -26,6 +26,9 @@ protected:
 	 */
 	void convertConsToPar(int iCell, Param & par);
 	
+
+	Param reconstructParam(Point p, int cell);
+
 	/**
 	 *	Вычисление параметров справа и слева от границы ячейки
 	 */
