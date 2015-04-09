@@ -82,10 +82,10 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\..\..\..\Cloud%40Mail.Ru\dev\sci\2D\cfd-2d\src\bnd_cond.cpp" />
-    <ClCompile Include="..\..\..\..\..\Cloud%40Mail.Ru\dev\sci\2D\cfd-2d\src\mesh\MeshReader.cpp" />
-    <ClCompile Include="..\..\..\..\..\Cloud%40Mail.Ru\dev\sci\2D\cfd-2d\src\mesh\MeshReaderBerkleyTriangle.cpp" />
-    <ClCompile Include="..\..\..\..\..\Cloud%40Mail.Ru\dev\sci\2D\cfd-2d\src\mesh\MeshReaderSalomeUnv.cpp" />
+    <ClCompile Include="src\bnd_cond.cpp" />
+    <ClCompile Include="src\mesh\MeshReader.cpp" />
+    <ClCompile Include="src\mesh\MeshReaderBerkleyTriangle.cpp" />
+    <ClCompile Include="src\mesh\MeshReaderSalomeUnv.cpp" />
     <ClCompile Include="src\global.cpp" />
     <ClCompile Include="src\grid.cpp" />
     <ClCompile Include="src\main.cpp" />
@@ -101,10 +101,10 @@
     <ClCompile Include="src\tinyxml\tinyxmlparser.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="..\..\..\..\..\Cloud%40Mail.Ru\dev\sci\2D\cfd-2d\src\bnd_cond.h" />
-    <ClInclude Include="..\..\..\..\..\Cloud%40Mail.Ru\dev\sci\2D\cfd-2d\src\mesh\MeshReader.h" />
-    <ClInclude Include="..\..\..\..\..\Cloud%40Mail.Ru\dev\sci\2D\cfd-2d\src\mesh\MeshReaderBerkleyTriangle.h" />
-    <ClInclude Include="..\..\..\..\..\Cloud%40Mail.Ru\dev\sci\2D\cfd-2d\src\mesh\MeshReaderSalomeUnv.h" />
+    <ClInclude Include="src\bnd_cond.h" />
+    <ClInclude Include="src\mesh\MeshReader.h" />
+    <ClInclude Include="src\mesh\MeshReaderBerkleyTriangle.h" />
+    <ClInclude Include="src\mesh\MeshReaderSalomeUnv.h" />
     <ClInclude Include="src\global.h" />
     <ClInclude Include="src\grid.h" />
     <ClInclude Include="src\mesh\triangle\triangle.h" />
